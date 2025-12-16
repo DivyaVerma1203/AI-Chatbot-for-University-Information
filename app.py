@@ -1,20 +1,16 @@
 import streamlit as st
 import re
-import pyodbc
+import pymssql
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
 
 # 1. Connect to AZURE SQL DATABASE
 
-conn = pyodbc.connect(
-    "Driver={ODBC Driver 18 for SQL Server};"
-    f"Server={st.secrets['DB_SERVER']};"
-    f"Database={st.secrets['DB_NAME']};"
-    f"Uid={st.secrets['DB_USER']};"
-    f"Pwd={st.secrets['DB_PASSWORD']};"
-    "Encrypt=yes;"
-    "TrustServerCertificate=no;"
-    "Connection Timeout=30;"
+conn = pymssql.connect(
+    server=st.secrets["DB_SERVER"],
+    user=st.secrets["DB_USER"],
+    password=st.secrets["DB_PASSWORD"],
+    database=st.secrets["DB_NAME"]
 )
 cursor = conn.cursor()
 
@@ -106,6 +102,7 @@ user_question = st.text_input("Ask your question:")
 if user_question:
     response = chatbot_response(user_question)
     st.write("**Chatbot:**", response)
+
 
 
 
