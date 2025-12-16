@@ -1,5 +1,0 @@
-unixodbc
-unixodbc-dev
-curl
-gnupg
-apt-transport-https
