@@ -8,7 +8,7 @@ from sklearn.metrics.pairwise import cosine_similarity
 
 conn = pyodbc.connect(
     "Driver={ODBC Driver 18 for SQL Server};"
-    f"Server={st.secrets['unversitychatbot']};"
+    f"Server={st.secrets['universitychatbot']};"
     f"Database={st.secrets['ChatbotDB']};"
     f"Uid={st.secrets['divya_verma']};"
     f"Pwd={st.secrets['rtu@12345']};"
@@ -106,4 +106,5 @@ user_question = st.text_input("Ask your question:")
 if user_question:
     response = chatbot_response(user_question)
     st.write("**Chatbot:**", response)
+
 
