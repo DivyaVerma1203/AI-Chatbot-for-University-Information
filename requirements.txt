@@ -1,6 +1,8 @@
 streamlit
 sqlalchemy
 pyodbc
+scikit-learn
+
 
 
 
