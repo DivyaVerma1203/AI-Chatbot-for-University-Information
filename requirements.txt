@@ -2,6 +2,10 @@ streamlit
 sqlalchemy
 pyodbc
 scikit-learn
+pandas
+numpy
+nltk
+
 
 
 
