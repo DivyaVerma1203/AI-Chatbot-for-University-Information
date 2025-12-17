@@ -1,8 +1,7 @@
 streamlit
 sqlalchemy
-pytds
-pandas
-openai
+pyodbc
+
 
 
 
