@@ -4,9 +4,8 @@ import re
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
 
-# --------------------------------------------------
 # 1. Connect to Azure SQL Database
-# --------------------------------------------------
+
 conn = pyodbc.connect(
     "Driver={ODBC Driver 17 for SQL Server};"
     f"Server={st.secrets['DB_SERVER']};"
@@ -19,9 +18,8 @@ conn = pyodbc.connect(
 )
 cursor = conn.cursor()
 
-# --------------------------------------------------
 # 2. Fetch Questions & Answers
-# --------------------------------------------------
+
 cursor.execute(
     "SELECT question, answer FROM faq WHERE question IS NOT NULL AND answer IS NOT NULL"
 )
@@ -30,9 +28,8 @@ data = cursor.fetchall()
 questions = [str(row[0]).strip() for row in data]
 answers = [str(row[1]).strip() for row in data]
 
-# --------------------------------------------------
 # 3. Text Normalization
-# --------------------------------------------------
+
 def normalize_text(text: str) -> str:
     text = text.lower()
     text = re.sub(r"[^a-z0-9\s]", " ", text)
@@ -41,9 +38,8 @@ def normalize_text(text: str) -> str:
 
 questions_norm = [normalize_text(q) for q in questions]
 
-# --------------------------------------------------
 # 4. TF-IDF Vectorization (Semantic Matching)
-# --------------------------------------------------
+
 vectorizer = TfidfVectorizer(
     ngram_range=(1, 2),
     stop_words='english',
@@ -51,9 +47,8 @@ vectorizer = TfidfVectorizer(
 )
 X = vectorizer.fit_transform(questions_norm)
 
-# --------------------------------------------------
 # 5. Chatbot Logic with Strict Thresholding
-# --------------------------------------------------
+
 def chatbot_response(user_input: str) -> str:
     if not user_input or len(user_input.strip()) < 3:
         return "Please ask a complete question."
@@ -81,9 +76,8 @@ def chatbot_response(user_input: str) -> str:
         "Please rephrase or contact the university administration."
     )
 
-# --------------------------------------------------
 # 6. Streamlit UI
-# --------------------------------------------------
+
 st.set_page_config(page_title="University AI Chatbot", layout="centered")
 
 st.title("University Information Chatbot")
@@ -94,6 +88,7 @@ user_question = st.text_input("Enter your question:")
 if user_question:
     response = chatbot_response(user_question)
     st.markdown(f"**Chatbot:** {response}")
+
 
 
 
