@@ -2,7 +2,7 @@ import pyodbc
 import streamlit as st
 
 conn = pyodbc.connect(
-    "Driver={ODBC Driver 18 for SQL Server};"
+    "Driver={ODBC Driver 17 for SQL Server};"
     f"Server={st.secrets['DB_SERVER']};"
     f"Database={st.secrets['DB_NAME']};"
     f"Uid={st.secrets['DB_USER']};"
@@ -11,6 +11,7 @@ conn = pyodbc.connect(
     "TrustServerCertificate=no;"
     "Connection Timeout=30;"
 )
+
 
 
 
