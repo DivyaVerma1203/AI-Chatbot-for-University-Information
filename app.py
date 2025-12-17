@@ -1,6 +1,7 @@
 import pyodbc
 import streamlit as st
 import re
+from sklearn.model_selection import train_test_split
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
 
@@ -106,6 +107,7 @@ user_question = st.text_input("Ask your question:")
 if user_question:
     response = chatbot_response(user_question)
     st.write("**Chatbot:**", response)
+
 
 
 
