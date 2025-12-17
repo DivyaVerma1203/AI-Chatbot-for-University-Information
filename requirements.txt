@@ -1,7 +1,8 @@
 streamlit
-pyodbc
-scikit-learn
+sqlalchemy
+pytds
 pandas
-numpy
-pymssql
+openai
+
+
 
