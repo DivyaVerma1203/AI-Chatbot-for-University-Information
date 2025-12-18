@@ -81,13 +81,14 @@ def chatbot_response(user_input: str) -> str:
 st.set_page_config(page_title="University AI Chatbot", layout="centered")
 
 st.title("University Information Chatbot")
-st.write("Ask questions related to exams, admissions, fees, certificates, etc.")
+st.write("Ask questions related to exams, fees, certificates, etc.")
 
 user_question = st.text_input("Enter your question:")
 
 if user_question:
     response = chatbot_response(user_question)
     st.markdown(f"**Chatbot:** {response}")
+
 
 
 
