@@ -4,23 +4,16 @@ import anthropic
 from pathlib import Path
 from datetime import datetime
  
-# ─────────────────────────────────────────────
-# Page Config — must be first
-# ─────────────────────────────────────────────
 st.set_page_config(
     page_title="UniBot — University Assistant",
     page_icon="🎓",
     layout="centered"
 )
  
-# ─────────────────────────────────────────────
-# Custom CSS — Professional Dark Theme
-# ─────────────────────────────────────────────
 st.markdown("""
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&display=swap');
  
-/* ── Global Reset ── */
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
  
 html, body, [class*="css"] {
@@ -29,7 +22,6 @@ html, body, [class*="css"] {
     color: #e8eaf0 !important;
 }
  
-/* ── Hide Streamlit Defaults ── */
 #MainMenu, footer, header { visibility: hidden; }
 .block-container {
     padding: 0 !important;
@@ -37,13 +29,11 @@ html, body, [class*="css"] {
     margin: 0 auto !important;
 }
  
-/* ── Animated Gradient Background ── */
 [data-testid="stAppViewContainer"] {
     background: linear-gradient(135deg, #0a0e1a 0%, #0d1525 50%, #0a0e1a 100%) !important;
     min-height: 100vh;
 }
  
-/* ── Hero Header ── */
 .hero {
     text-align: center;
     padding: 3rem 2rem 1.5rem;
@@ -93,7 +83,6 @@ html, body, [class*="css"] {
     line-height: 1.6;
 }
  
-/* ── Chat Container ── */
 .chat-container {
     padding: 0 1.5rem;
     display: flex;
@@ -103,7 +92,6 @@ html, body, [class*="css"] {
     min-height: 200px;
 }
  
-/* ── Chat Bubbles ── */
 .msg-row {
     display: flex;
     gap: 10px;
@@ -157,32 +145,6 @@ html, body, [class*="css"] {
     text-align: right;
 }
  
-/* ── Typing Indicator ── */
-.typing {
-    display: flex;
-    align-items: center;
-    gap: 4px;
-    padding: 12px 16px;
-    background: rgba(255,255,255,0.05);
-    border: 1px solid rgba(255,255,255,0.08);
-    border-radius: 18px;
-    border-top-left-radius: 4px;
-    width: fit-content;
-}
-.typing span {
-    width: 7px; height: 7px;
-    background: #6366f1;
-    border-radius: 50%;
-    animation: bounce 1.2s infinite;
-}
-.typing span:nth-child(2) { animation-delay: 0.2s; }
-.typing span:nth-child(3) { animation-delay: 0.4s; }
-@keyframes bounce {
-    0%, 60%, 100% { transform: translateY(0); opacity: 0.4; }
-    30% { transform: translateY(-6px); opacity: 1; }
-}
- 
-/* ── Input Area ── */
 .input-wrapper {
     position: sticky;
     bottom: 0;
@@ -204,10 +166,6 @@ html, body, [class*="css"] {
     box-shadow: 0 0 0 3px rgba(99,102,241,0.1);
 }
  
-/* ── Streamlit Input Overrides ── */
-[data-testid="stTextInput"] {
-    flex: 1;
-}
 [data-testid="stTextInput"] > div > div {
     background: transparent !important;
     border: none !important;
@@ -231,7 +189,6 @@ html, body, [class*="css"] {
     box-shadow: none !important;
 }
  
-/* ── Button ── */
 [data-testid="stButton"] button {
     background: linear-gradient(135deg, #6366f1, #8b5cf6) !important;
     color: white !important;
@@ -251,7 +208,6 @@ html, body, [class*="css"] {
     box-shadow: 0 4px 15px rgba(99,102,241,0.4) !important;
 }
  
-/* ── Suggestion Chips ── */
 .chips-section {
     padding: 0 1.5rem 1rem;
 }
@@ -275,33 +231,22 @@ html, body, [class*="css"] {
     padding: 6px 14px;
     font-size: 0.8rem;
     color: #9ca3af;
-    cursor: pointer;
-    transition: all 0.2s;
     font-family: 'DM Sans', sans-serif;
 }
-.chip:hover {
-    background: rgba(99,102,241,0.15);
-    border-color: rgba(99,102,241,0.3);
-    color: #a5b4fc;
-}
  
-/* ── Divider ── */
 .divider {
     height: 1px;
     background: linear-gradient(to right, transparent, rgba(255,255,255,0.06), transparent);
     margin: 0.5rem 1.5rem 1rem;
 }
  
-/* ── Stats Bar ── */
 .stats-bar {
     display: flex;
     justify-content: center;
     gap: 2rem;
     padding: 0 1.5rem 1.5rem;
 }
-.stat {
-    text-align: center;
-}
+.stat { text-align: center; }
 .stat-num {
     font-family: 'Syne', sans-serif;
     font-size: 1.3rem;
@@ -315,16 +260,14 @@ html, body, [class*="css"] {
     letter-spacing: 0.05em;
 }
  
-/* ── Scrollbar ── */
 ::-webkit-scrollbar { width: 4px; }
 ::-webkit-scrollbar-track { background: transparent; }
 ::-webkit-scrollbar-thumb { background: rgba(99,102,241,0.3); border-radius: 2px; }
 </style>
 """, unsafe_allow_html=True)
  
-# ─────────────────────────────────────────────
 # 2. Load CSV Data
-# ─────────────────────────────────────────────
+
 @st.cache_data
 def load_data():
     df = pd.read_csv('Chatbot Data.csv')
@@ -338,9 +281,8 @@ def build_context(questions, answers):
         context += f"Q{i}: {q}\nA{i}: {a}\n\n"
     return context
  
-# ─────────────────────────────────────────────
-# 3. Claude API
-# ─────────────────────────────────────────────
+# 3. Claude API 
+
 def get_answer(user_question, context):
     client = anthropic.Anthropic(api_key=st.secrets["ANTHROPIC_API_KEY"])
  
@@ -355,7 +297,7 @@ STRICT RULES:
 4. Do NOT make up answers or add extra information.
 5. Understand the MEANING of questions — different phrasings of the same question should give the same answer.
 6. Keep answers clear, friendly, and helpful.
-7. Never answer questions about location, directions, infrastructure, or anything not in the data.
+7. Never answer questions about location, directions, or anything not in the data.
  
 UNIVERSITY Q&A DATA:
 {context}"""
@@ -364,13 +306,14 @@ UNIVERSITY Q&A DATA:
         model="claude-opus-4-6",
         max_tokens=1000,
         system=system_prompt,
-        messages=[{{"role": "user", "content": user_question}}]
+        messages=[
+            {"role": "user", "content": str(user_question)}
+        ]
     )
     return message.content[0].text
  
-# ─────────────────────────────────────────────
 # 4. Session State
-# ─────────────────────────────────────────────
+
 if "messages" not in st.session_state:
     st.session_state.messages = []
 if "input_key" not in st.session_state:
@@ -380,9 +323,8 @@ if "input_key" not in st.session_state:
 questions, answers = load_data()
 context = build_context(questions, answers)
  
-# ─────────────────────────────────────────────
 # 5. Hero Header
-# ─────────────────────────────────────────────
+
 st.markdown("""
 <div class="hero">
     <div class="hero-badge">🎓 AI Powered Assistant</div>
@@ -391,7 +333,6 @@ st.markdown("""
 </div>
 """, unsafe_allow_html=True)
  
-# Stats Bar
 st.markdown(f"""
 <div class="stats-bar">
     <div class="stat">
@@ -410,9 +351,8 @@ st.markdown(f"""
 <div class="divider"></div>
 """, unsafe_allow_html=True)
  
-# ─────────────────────────────────────────────
 # 6. Suggestion Chips
-# ─────────────────────────────────────────────
+
 samples = [
     "When do exams start?",
     "How to get admit card?",
@@ -428,9 +368,8 @@ st.markdown('<div class="chips-section"><div class="chips-label">✦ Try asking<
  
 st.markdown('<div class="divider"></div>', unsafe_allow_html=True)
  
-# ─────────────────────────────────────────────
 # 7. Chat History
-# ─────────────────────────────────────────────
+
 if st.session_state.messages:
     chat_html = '<div class="chat-container">'
     for msg in st.session_state.messages:
@@ -465,9 +404,8 @@ else:
     </div>
     """, unsafe_allow_html=True)
  
-# ─────────────────────────────────────────────
 # 8. Input Area
-# ─────────────────────────────────────────────
+
 st.markdown('<div class="input-wrapper"><div class="input-card">', unsafe_allow_html=True)
  
 col1, col2 = st.columns([5, 1])
@@ -482,34 +420,29 @@ with col2:
     send = st.button("Send →")
  
 st.markdown('</div></div>', unsafe_allow_html=True)
- 
-# ─────────────────────────────────────────────
+
 # 9. Handle Send
-# ─────────────────────────────────────────────
+
 if send and user_input.strip():
     now = datetime.now().strftime("%I:%M %p")
  
-    # Add user message
     st.session_state.messages.append({
         "role": "user",
         "content": user_input.strip(),
         "time": now
     })
  
-    # Get bot response
-    with st.spinner(""):
+    with st.spinner("Thinking..."):
         try:
             response = get_answer(user_input.strip(), context)
         except Exception as e:
             response = f"Something went wrong. Please try again. ({str(e)})"
  
-    # Add bot message
     st.session_state.messages.append({
         "role": "bot",
         "content": response,
         "time": datetime.now().strftime("%I:%M %p")
     })
  
-    # Clear input
     st.session_state.input_key += 1
     st.rerun()
