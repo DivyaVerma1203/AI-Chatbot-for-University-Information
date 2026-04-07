@@ -38,118 +38,84 @@ def clean(text: str) -> str:
     text = re.sub(r"\s+", " ", text)
     return text
 
-# 5. Topic Guard
 
-UNIVERSITY_KEYWORDS = {
-    'exam', 'exams', 'examination', 'result', 'results', 'marks', 'mark',
-    'grade', 'grades', 'cgpa', 'attendance', 'admit', 'card', 'hall',
-    'ticket', 'timetable', 'schedule', 'semester', 'subject', 'subjects',
-    'fee', 'fees', 'registration', 'register', 'revaluation', 'backlog',
-    'supplementary', 'degree', 'certificate', 'marksheet', 'practical',
-    'internal', 'external', 'assignment', 'portal', 'student', 'university',
-    'college', 'department', 'faculty', 'syllabus', 'paper', 'passing',
-    'fail', 'failed', 'pass', 'duplicate', 'convocation', 'malpractice',
-    'cheating', 'late', 'penalty', 'recheck', 'rechecking', 'answer',
-    'question', 'download', 'upload', 'login', 'password', 'roll',
-    'number', 'id', 'identity', 'document', 'medical', 'illness', 'miss',
-    'absent', 'absence', 'calculator', 'mobile', 'phone', 'allowed',
-    'prohibited', 'seating', 'arrangement', 'duration', 'timing', 'date',
-    'when', 'how', 'where', 'what', 'apply', 'application', 'contact',
-    'office', 'cell', 'coordinator', 'controller', 'correction', 'error',
-    'mistake', 'discrepancy', 'update', 'profile', 'email', 'account'
-}
- 
-def is_university_related(user_input: str) -> bool:
-    words = set(clean(user_input).split())
-    # Check if at least one university keyword exists in query
-    matched = words & UNIVERSITY_KEYWORDS
-    return len(matched) > 0
- 
-# 6. Keyword Boost
+# 5. Keyword Boost
 
-STOPWORDS = {
-    'what','when','where','how','why','who','is','the','a','an','i',
-    'my','can','do','did','are','in','of','for','to','get','me','will',
-    'be','it','if','on','at','by','up','as','or','and','this','that',
-    'with','from','have','has','had','was','were','been','about','should'
-}
- 
 def keyword_boost(user_input: str, questions: list) -> np.ndarray:
-    user_words = set(clean(user_input).split()) - STOPWORDS
-    boost      = np.zeros(len(questions))
-    if not user_words:
-        return boost
+    user_words  = set(clean(user_input).split())
+    boost       = np.zeros(len(questions))
+    stopwords   = {'what','when','where','how','why','who','is',
+                   'the','a','an','i','my','can','do','did','are',
+                   'in','of','for','to','get','me','will','be','it'}
+    # Only keep meaningful words
+    user_words -= stopwords
+
     for i, q in enumerate(questions):
-        q_words = set(clean(q).split()) - STOPWORDS
+        q_words = set(clean(q).split())
         overlap = user_words & q_words
         if overlap:
-            boost[i] = len(overlap) / max(len(user_words), 1) * 0.10
+            # Boost proportional to overlap
+            boost[i] = len(overlap) / max(len(user_words), 1) * 0.15
+
     return boost
 
-# 7. Main Response Function
+# 6. Main Response Function
 
-SORRY_MESSAGE = (
-    "Sorry, I could not find relevant information for your question. "
-    "Please rephrase or contact the university administration."
-)
- 
 def chatbot_response(user_input, questions, answers, model, q_embeddings, a_embeddings):
     if not user_input or len(user_input.strip()) < 3:
         return "Please ask a complete question."
- 
-    # ── Step 1: Topic Guard ──────────────────
-    # Reject completely unrelated questions immediately
-    if not is_university_related(user_input):
-        return SORRY_MESSAGE
- 
-    # ── Step 2: Semantic Matching ────────────
+
+    # Encode user question
     user_embedding = model.encode(user_input, convert_to_tensor=True)
- 
-    # Score against questions (primary match)
+
+    # Semantic similarity against questions (primary)
     q_scores = util.cos_sim(user_embedding, q_embeddings)[0].cpu().numpy()
- 
-    # Score against answers (secondary match)
+
+    # Semantic similarity against answers (secondary)
     a_scores = util.cos_sim(user_embedding, a_embeddings)[0].cpu().numpy()
- 
+
     # Keyword boost
     boost = keyword_boost(user_input, questions)
- 
-    # Final combined score
-    final_scores = (0.75 * q_scores) + (0.15 * a_scores) + boost
- 
-    best_idx   = int(np.argmax(final_scores))
+
+    # Final score:
+    # 70% question match + 20% answer match + 10% keyword boost
+    final_scores = (0.70 * q_scores) + (0.20 * a_scores) + boost
+
+    # Get top 3 candidates
+    top3_idx = np.argsort(final_scores)[::-1][:3]
+    best_idx  = top3_idx[0]
     best_score = final_scores[best_idx]
-    q_score    = q_scores[best_idx]
- 
-    # ── Step 3: Strict Double Threshold ──────
-    # BOTH combined score AND raw question score
-    # must be high enough to return an answer
-    COMBINED_THRESHOLD = 0.40   # combined score must be > 0.40
-    QUESTION_THRESHOLD = 0.35   # raw question match must be > 0.35
- 
-    if best_score >= COMBINED_THRESHOLD and q_score >= QUESTION_THRESHOLD:
+
+    # Dynamic threshold — if best score is decent, return it
+    THRESHOLD = 0.25
+
+    if best_score >= THRESHOLD:
         return answers[best_idx]
- 
-    # If scores are too low → question is too different from stored data
-    return SORRY_MESSAGE
-    
+
+    # Last resort — if semantic fails, return closest question's answer anyway
+    # (because user is clearly asking about university topics)
+    if q_scores[best_idx] > 0.15:
+        return answers[best_idx]
+
+    return (
+        "Sorry, I could not find relevant information for your question. "
+        "Please rephrase or contact the university administration."
+    )
+
 # 7. Streamlit UI
 
 st.set_page_config(page_title="University AI Chatbot", layout="centered")
 st.title("🎓 University Information Chatbot")
 st.write("Ask anything about exams, results, attendance, fees, and more!")
- 
+
 # Load everything
-questions, answers         = load_data()
-model                      = load_model()
+questions, answers       = load_data()
+model                    = load_model()
 q_embeddings, a_embeddings = get_embeddings(model, questions, answers)
- 
+
 # Chat input
-user_question = st.text_input(
-    "Your Question:",
-    placeholder="e.g. When will my results come out?"
-)
- 
+user_question = st.text_input("Your Question:", placeholder="e.g. When will my results come?")
+
 if user_question:
     with st.spinner("Finding best answer..."):
         response = chatbot_response(
@@ -157,7 +123,7 @@ if user_question:
             model, q_embeddings, a_embeddings
         )
     st.markdown(f"**🤖 Chatbot:** {response}")
- 
+
 # Sample questions
 st.markdown("---")
 st.markdown("💡 **Try asking in any way you like:**")
@@ -167,8 +133,8 @@ samples = [
     "What score do I need to pass?",
     "Is phone allowed in exam hall?",
     "My marksheet has wrong marks",
-    "How many days for duplicate marksheet?",
-    "What if I miss too many classes?",
+    "How many days to get duplicate marksheet?",
+    "What if I bunk too many classes?",
 ]
 for s in samples:
     st.write(f"• {s}")
