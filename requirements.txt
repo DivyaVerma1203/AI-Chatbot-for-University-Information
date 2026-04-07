@@ -1,7 +1,6 @@
 streamlit
-pyodbc
+pandas
 scikit-learn
-numpy
 
 
 
