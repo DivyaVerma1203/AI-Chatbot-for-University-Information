@@ -7,7 +7,7 @@ from sklearn.metrics.pairwise import cosine_similarity
 # 1. Load Data from CSV
 @st.cache_data
 def load_data():
-    df = pd.read_csv('qa_data.csv')
+    df = pd.read_csv('Chatbot Data.csv')
     questions = [str(q).strip() for q in df['question'].tolist()]
     answers = [str(a).strip() for a in df['answer'].tolist()]
     return questions, answers
@@ -42,7 +42,7 @@ def chatbot_response(user_input: str) -> str:
     best_score = similarities[best_idx]
 
     # ------------------------------
-    # Threshold Control (CRITICAL)
+    # Threshold Control
     # ------------------------------
     SIMILARITY_THRESHOLD = 0.55
     if best_score >= SIMILARITY_THRESHOLD:
