@@ -9,9 +9,7 @@ from sentence_transformers import SentenceTransformer, util
 
 @st.cache_data
 def load_data():
-    base_path = Path(__file__).parent
-    csv_path  = base_path / 'qa_data.csv'
-    df        = pd.read_csv(csv_path)
+    df = pd.read_csv('Chatbot Data.csv')
     questions = [str(q).strip() for q in df['question'].tolist()]
     answers   = [str(a).strip() for a in df['answer'].tolist()]
     return questions, answers
