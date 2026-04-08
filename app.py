@@ -126,7 +126,7 @@ if user_question:
 
 # Sample questions
 st.markdown("---")
-st.markdown("💡 **Try asking in any way you like:**")
+st.markdown("💡 **What are your queries?**")
 samples = [
     "Tell me about exam dates",
     "How do I get my admit card?",
