@@ -1,7 +1,6 @@
 # AI-Chatbot-for-University-Information
 
 [![Live Demo](https://img.shields.io/badge/🚀_Live_Demo-Click_Here-brightgreen?style=for-the-badge)](https://ai-chatbot-for-university-information-3uzgpgzfqy7yajvfesphnh.streamlit.app/)
-[![GitHub Repo](https://img.shields.io/badge/Code-Repository-blue?style=for-the-badge)](https://github.com/DivyaVerma1203/AI-Chatbot-for-University-Information)
 
 > **Live Web Application:** [Try the Chatbot Live Here](https://ai-chatbot-for-university-information-3uzgpgzfqy7yajvfesphnh.streamlit.app/)
 
